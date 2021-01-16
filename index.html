@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Daniel Chenery &mdash; Software Developer</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Daniel Chenery, a (mostly) self-taught full-stack developer since 2012. Beginning in the web world, moving to software with a solid understand of the .NET ecosystem.">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Coming+Soon&display=swap" rel="stylesheet">
+	<link href="styles.css" rel="stylesheet">
+</head>
+
+<body>
+	<div class="centered-content">
+		<section class="sticky-note yellow page-curl">
+			<h1 class="text">TODO:</h1>
+			<ul>
+				<li class="strike">Make holding page</li>
+				<li>Build website</li>
+				<li contenteditable></li>
+			</ul>
+		</section>
+	</div>
+
+	<footer class="theme" style="display: none;">
+		<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" title="Toggle Light Theme" data-theme="light">
+			<path
+				d="M20 15.31L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+		</svg>
+		<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" title="Toggle Dark Theme" data-theme="dark">
+			<path
+				d="M9 2c-1.05 0-2.05.16-3 .46 4.06 1.27 7 5.06 7 9.54 0 4.48-2.94 8.27-7 9.54.95.3 1.95.46 3 .46 5.52 0 10-4.48 10-10S14.52 2 9 2z" />
+		</svg>
+	</footer>
+
+	<script>
+		const enter = 13,
+			del = 46,
+			backspace = 8;
+
+		var themes = {
+				light: '#CACBCB',
+				dark: '#353434'
+			},
+			colors = ['yellow', 'orange', 'purple', 'green'],
+			colourPicker = document.createElement('ul'),
+			stickyNote = document.querySelector('.sticky-note'),
+			themePicker = document.querySelector('.theme'),
+			svgs = Array.from(themePicker.getElementsByTagName('svg')),
+			emptyItem = stickyNote.querySelector('[contenteditable]');
+
+		colourPicker.classList.add("colour-picker");
+
+		colors.forEach(color => {
+			let node = document.createElement('li');
+			node.classList.add(color);
+			node.title = color;
+
+			node.addEventListener('click', e => {
+				e.preventDefault();
+				changeColour(color);
+			});
+
+			colourPicker.appendChild(node);
+		});
+
+		stickyNote.insertAdjacentElement('afterEnd', colourPicker);
+
+		themePicker.style.display = '';
+		svgs.forEach(svg => {
+			svg.addEventListener('click', (e, x) => {
+				e.preventDefault();
+				changeTheme(svg.dataset.theme);
+			}, true)
+		});
+
+		emptyItem.addEventListener('keydown', itemListener);
+
+		function changeColour(newColor) {
+			stickyNote.classList.remove(...colors);
+			stickyNote.classList.add(newColor);
+		}
+
+		function changeTheme(themeName) {
+			var currentTheme = (document.documentElement.style.getPropertyValue('--theme') || getComputedStyle(document.documentElement).getPropertyValue('--theme')).toUpperCase().trim(),
+				newTheme = themes[themeName];
+
+			if (newTheme === undefined || currentTheme === newTheme) {
+				return;
+			}
+
+			document.documentElement.style.setProperty('--theme', newTheme);
+
+			svgs.forEach(svg => {
+				svg.style.fill = currentTheme;
+			});
+		}
+
+		function itemListener(e) {
+			switch (e.keyCode) {
+				case enter:
+					e.preventDefault();
+					addItem(e.target);
+					break;
+
+				case del:
+					var selection = window.getSelection();
+					if (selection.focusOffset === e.target.innerText.length) {
+						removeItem(e.target, 'below');
+					}
+					break;
+
+				case backspace:
+					var selection = window.getSelection();
+					if (selection.focusOffset === 0) {
+						removeItem(e.target, 'current');
+					}
+					break;
+			}
+		}
+
+		function addItem(currentNode) {
+			var newNode = currentNode.cloneNode();
+			newNode.innerHtml = '';
+			newNode.addEventListener('keydown', itemListener);
+
+			currentNode.insertAdjacentElement('afterEnd', newNode);
+
+			newNode.focus();
+		}
+
+		function removeItem(currentNode, position) {
+			var targetNode;
+
+			if (position === 'below') {
+				targetNode = currentNode.nextElementSibling;
+			} else if (position === 'current') {
+				Array.from(currentNode.parentElement.children).forEach(n => {
+					if (n !== currentNode && n.isContentEditable) {
+						targetNode = currentNode;
+						return;
+					}
+				});
+			} else if (position === 'above') {
+				targetNode = currentNode.previousElementSibling;
+			}
+
+			if (targetNode === null || targetNode === undefined || targetNode.isContentEditable === false) {
+				return;
+			}
+
+			targetNode.remove();
+		}
+	</script>
+</body>
+
+</html>

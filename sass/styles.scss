@@ -1,0 +1,206 @@
+$dark: #353434;
+$light: invert($dark);
+$animation-duration: 0.15s;
+
+$colours: ('yellow': #F5F58A, 'purple': #acacf1, 'green': #84ef84, 'orange': #ffbc42);
+
+@use 'sass:color';
+
+@mixin dark() {
+	@media (prefers-color-scheme: dark) {
+		@content;
+	}
+}
+
+/* Gradient page curl from: https://codepen.io/JoostKiens/pen/sIwmb */
+
+:root {
+	--theme: #{$light};
+}
+
+body {
+	background-color: var(--theme);
+	color: $dark;
+	font-family: 'Coming Soon', cursive;
+	margin: 0;
+	// min-height: 100vh;
+	// position: relative;
+	transition: $animation-duration background-color;
+}
+
+.sticky-note {
+	--buffer: 15px;
+
+	box-shadow: 7px -7px 12px rgba(0, 0, 0, 0.05);
+	width: 250px;
+	max-width: calc(100% - (var(--buffer) * 2));
+	min-height: 250px;
+	padding: var(--buffer);
+	transform: rotate3d(0, 0, 1, -3deg);
+
+	&:before {
+		content:"";
+		position: relative;
+		width: calc(100% + (var(--buffer) * 2));
+		height: 35px;
+		left: -15px;
+		top: -15px;
+		display: block;
+		background-color: rgba(0, 0, 0, 0.06);
+	}
+
+	li[contenteditable] {
+		outline: 0;
+	
+		&:last-child:empty {
+			&:after {
+				content: "";
+				border-left: 2px solid $dark;
+				// animation: blink 0.5s infinite linear alternate;
+				animation: blink 1.3s steps(2, end) infinite;
+			}
+
+			@keyframes blink {
+				0% {
+					opacity: 0;
+				}
+
+				100% {
+					opacity: 1;
+				}
+			}
+		}
+
+		&:focus + li:after {
+			content:none!important;
+		}
+	}
+}
+
+@each $name, $hex in $colours {
+	.#{$name} {
+		background-color: #{$hex};
+	}
+
+	.page-curl.#{$name}:after {
+		background-image: linear-gradient(
+			45deg, 
+			var(--theme), 
+			var(--theme) 45%,
+			lighten($hex, 17%) 50%, 
+			lighten($hex, 15%) 50%, 
+			$hex 56%,
+			darken($hex, 15%) 62%, 
+			darken($hex, 17%) 80%, 
+			darken($hex, 30%) 100% 
+		);
+	}
+
+	/*
+	.page-curl.#{$name}:after {
+		background-image: linear-gradient(
+			45deg, 
+			$light, 
+			mix($light, lighten($hex, 30%), $weight: 25%) 45%,
+			lighten($hex, 17%) 50%, 
+			lighten($hex, 15%) 50%, 
+			$hex 56%,
+			darken($hex, 15%) 62%, 
+			darken($hex, 17%) 80%, 
+			darken($hex, 30%) 100% 
+		);
+		
+		@include dark() {
+			background-image: linear-gradient(
+				45deg, 
+				$dark, 
+				mix($dark, darken($hex, 30%), $weight: 100%) 45%,
+				darken($hex, 17%) 50%,
+				darken($hex, 15%) 50%,
+				$hex 56%,
+				lighten($hex, 15%) 62%,
+				lighten($hex, 17%) 80%,
+				lighten($hex, 30%) 100%
+			);
+		}
+	}
+	*/
+}
+
+p, .text {
+	font-size: 1em;
+}
+
+.strike {
+	text-decoration: line-through;
+	opacity: 0.75;
+}
+
+.centered-content {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+}
+
+.page-curl {
+	--curl: 50px;
+	position: relative;
+	
+	&:after {
+		content: "";
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: var(--curl);
+		height: var(--curl);
+		transition: $animation-duration background-image;
+		box-shadow: 3px -3px 3px  rgba(0, 0, 0, 0.05);
+	}
+}
+
+.colour-picker {
+	display: flex;
+	justify-content: center;
+	list-style: none;
+	margin: 20px 0;
+	padding: 0;
+
+	li {
+		width: 30px;
+		height: 30px;
+		margin: 0 15px;
+		border: 1px solid rgba(0, 0, 0, 0.05);
+		cursor: pointer;
+	}
+}
+
+.theme {
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	margin: 10px 20px;
+}
+
+.theme svg {
+	cursor: pointer;
+	fill: #353434;
+	transition: $animation-duration fill;
+
+	&:before {
+		content: attr(title);
+		content: "Test";
+		color: red;
+		display: block;
+	}
+}
+
+@include dark {
+	:root {
+		--theme: #{$dark};
+	}
+
+	.theme svg {
+		fill: $light;
+	}
+}
